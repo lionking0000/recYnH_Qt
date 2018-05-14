@@ -63,14 +63,19 @@ int AlignTab::align()
     char* cstr_bait_fastq = (char*) str_bait_fastq.c_str();
     char* cstr_prey_fastq = (char*) str_prey_fastq.c_str();
 
+    cstr_bait_fasta = "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta";
+    cstr_bait_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz";
+    cstr_prey_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz";
+
     char* argv[] = { "./kmer", "FusionPairSearch", cstr_bait_fasta,
                      cstr_bait_fastq,
                      cstr_prey_fastq,
                      "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
 
+
     FusionPair* _fp = new FusionPair( argc, argv );
     _fp->bShortRun = m_robot->_run._config.fp_bShortRun;
-    _fp->Search();
+    _fp->Search_Normal();
     //_run->_pfp = _fp;
 
     for( int i = 0; i <= 100; i++ ){
@@ -204,13 +209,14 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
     QLabel *seqFile1 = new QLabel("Fastq file1");
 
     m_bait_fastq_Label.setText("Fastq file for Read 1 (Baits)");
-    m_bait_fastq_Label.setText("/Volumes/users/lserrano/jyang/work/Mireia/2017-03-03_MiSeq/S1_R1.fastq.gz");
+    m_bait_fastq_Label.setText("/Volumes/users/smaurer/sequencing_data/Mireia_Garriga/2017-03-03_MiSeq/18689_S1_L001_R1_001.fastq.gz"); // /Volumes/users/lserrano/jyang/work/Mireia/2017-03-03_MiSeq/S1_R1.fastq.gz
+
 
     m_browseButton3 = new QPushButton(tr("&Browse..."), this);
     connect(m_browseButton3, &QAbstractButton::clicked, this, &AlignTab::browse3);
 
     m_prey_fastq_Label.setText("Fastq file for Read 2 (Preys)");
-    m_prey_fastq_Label.setText("/Volumes/users/lserrano/jyang/work/Mireia/2017-03-03_MiSeq/S1_R2.fastq.gz");
+    m_prey_fastq_Label.setText("/Volumes/users/smaurer/sequencing_data/Mireia_Garriga/2017-03-03_MiSeq/18689_S1_L001_R2_001.fastq.gz"); // /Volumes/users/lserrano/jyang/work/Mireia/2017-03-03_MiSeq/S1_R2.fastq.gz
 
     m_browseButton4 = new QPushButton(tr("&Browse..."), this);
     connect(m_browseButton4, &QAbstractButton::clicked, this, &AlignTab::browse4);
@@ -301,6 +307,43 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
 }
 
 
+int MergeTab::merge()
+{
+    int argc = 7;
+    char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                     "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                     "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                     "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+    /*
+    std::string str_bait_fasta = this->m_bait_fasta_Label.text().toStdString();
+    std::string str_bait_fastq = this->m_bait_fastq_Label.text().toStdString();
+    std::string str_prey_fastq = this->m_prey_fastq_Label.text().toStdString();
+
+    char* cstr_bait_fasta = (char*) str_bait_fasta.c_str();
+    char* cstr_bait_fastq = (char*) str_bait_fastq.c_str();
+    char* cstr_prey_fastq = (char*) str_prey_fastq.c_str();
+
+    cstr_bait_fasta = "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta";
+    cstr_bait_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz";
+    cstr_prey_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz";
+
+    char* argv[] = { "./kmer", "FusionPairSearch", cstr_bait_fasta,
+                     cstr_bait_fastq,
+                     cstr_prey_fastq,
+                     "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+
+    */
+    FusionPair* _fp = new FusionPair( argc, argv );
+    _fp->bShortRun = m_robot->_run._config.fp_bShortRun;
+    _fp->Search();
+
+    for( int i = 0; i <= 100; i++ ){
+        //m_progressBar->setValue(i);
+        //this->update();
+    }
+    return 0;
+}
+
 
 MergeTab::MergeTab(CRobot *robot, QWidget *parent)
     : QWidget(parent)
@@ -308,8 +351,19 @@ MergeTab::MergeTab(CRobot *robot, QWidget *parent)
     m_robot = robot;
     QLabel *descriptionLabel = new QLabel(tr("Merge two interaction matries to generate an interaction score matrix"));
 
+    QGroupBox *runGroup = new QGroupBox(tr("Run"));
+    QProgressBar* m_progressBar = new QProgressBar(this);
+    QPushButton* m_browseButton5 = new QPushButton(tr("&Merge..."), this);
+    connect(m_browseButton5, &QAbstractButton::clicked, this, &MergeTab::merge);
+    QGridLayout *runLayout = new QGridLayout;
+    runLayout->addWidget(m_progressBar,0,0,1,4);
+    runLayout->addWidget(m_browseButton5,0,4,1,1);
+    runGroup->setLayout(runLayout);
+
+
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(descriptionLabel);
+    mainLayout->addWidget(runGroup);
     setLayout(mainLayout);
 }
 

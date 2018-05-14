@@ -15,6 +15,33 @@ FusionPair::FusionPair(int argc, char *argv[])
     this->bShortRun = false; //true;
 }
 
+int FusionPair::Search_Normal(){
+    cout << "read_fasta: " << this->_argv[2] << endl;
+    this->records = read_fasta( this->_argv[2] );
+
+    for ( vector<Record>::iterator it = this->records.begin(); it != this->records.end(); ++it ){
+        Record aRecord = *it;
+        this->_colnames.push_back( aRecord.header );
+        this->_rownames.push_back( aRecord.header );
+    }
+
+    //for( int i = 0){
+    //    this->_colnames;
+    //}
+
+    cout << "build_tree_from_records" << endl;
+    build_tree_from_records( &this->start, records );
+
+    cout << "pair_search_with_tree: " << this->_argv[3] << " , " << this->_argv[4] << endl;
+    //pair_search_with_tree( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) ); // for separated fastq file
+    pair_search_with_tree_normal( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) );
+
+    //print_map_pair_values( output );
+    //print_map_pair_map( output, records );
+    //write_comment_conditions( this->_argv[5] );
+    //write_map_pair_map( output, records, this->_argv[5] );
+}
+
 int FusionPair::Search(){
     cout << "read_fasta: " << this->_argv[2] << endl;
     this->records = read_fasta( this->_argv[2] );
@@ -33,13 +60,13 @@ int FusionPair::Search(){
     build_tree_from_records( &this->start, records );
 
     cout << "pair_search_with_tree: " << this->_argv[3] << " , " << this->_argv[4] << endl;
-    pair_search_with_tree( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) );
+    pair_search_with_tree( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) ); // for separated fastq file
+
     //print_map_pair_values( output );
     //print_map_pair_map( output, records );
     //write_comment_conditions( this->_argv[5] );
     //write_map_pair_map( output, records, this->_argv[5] );
 }
-
 
 vector<string> split(const string &text, char sep) {
     vector<string> tokens;

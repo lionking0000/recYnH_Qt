@@ -7,7 +7,7 @@
 #define MIS_MATCH_CUT   5
 #define MIN_LEVEL_CUT   30
 #define MATCH(a,b,level) ((a) == (b) ? (level) : (level+1))
-#define LENS    2048
+#define LENS    200
 
 #define DEBUG   0   // 0
 
@@ -190,6 +190,41 @@ int pair_search_with_tree_normal(dwag* start, map< pair<int, int>, int >& output
     char gz2[LENS];
     std::cout << fastq1 << std::endl;
     std::cout << fastq2 << std::endl;
+
+    gzFile infile = gzopen(fastq1, "rb");
+    if (!infile) return -1;
+
+    char buffer[LENS];
+    int count = 0;
+    int found_cnt1 = 0;
+    int global_mismatch = 1000;
+    dwag* found1 = NULL;
+    int i = 0;
+    while( 0 != gzgets(infile, buffer1, LENS) ){
+        i++;
+        if ( i % 4 != 2 ) continue;
+        count += 1;
+        //cout << buffer << endl;
+        global_mismatch = 1000;
+        //string value(buffer);
+        //found = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found );
+        //found1 = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found1 ); // for read1
+        //if ( found1 != NULL ) found_cnt += 1;
+
+        found1 = NULL;
+        if ( found1 == NULL ) {
+            for ( int xx = 0; xx < 100; xx ++ ){
+                found1 = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found1 ); // for read1
+                if ( found1 != NULL ) break;
+            }
+        }
+        if ( found1 != NULL ){
+            found_cnt1 += 1;
+        }
+    }
+    cout << "Total: " << count << "\t" << "Found: " << found_cnt1 << endl;
+    gzclose(infile);
+
 /*
     io::filtering_istream in;
     in.push(io::gzip_decompressor());

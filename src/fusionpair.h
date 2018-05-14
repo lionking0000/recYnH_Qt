@@ -12,6 +12,8 @@ public:
     FusionPair();
     FusionPair(int argc, char *argv[]);
     int Search();
+    int Search_Normal();
+
     int ReadPairResults(RuntimeInfo* run);
 
     int _argc;

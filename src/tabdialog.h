@@ -63,6 +63,8 @@ class MergeTab : public QWidget
 public:
     explicit MergeTab(CRobot *robot, QWidget *parent = 0);
     CRobot* m_robot;
+
+    int merge();
 };
 //! [1]
 
