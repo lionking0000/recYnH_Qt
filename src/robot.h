@@ -34,7 +34,8 @@ private:
 public:
     CRobot( int argc, char* argv[] );
     int work();
-    int visualize();
+    int visualize();        // example
+    int visualize_tab();    // tab view
 
     ~CRobot();
 

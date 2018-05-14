@@ -32,6 +32,7 @@ struct Record
 int fusion_pair_search(int argc, char *argv[]);
 dwag* build_tree_from_records(dwag* start, vector<Record>& records );
 int pair_search_with_tree(dwag* start, map< pair<int, int>, int >& output, char *fastq1, char *fastq2, bool bShortRun, int readlength );
+int pair_search_with_tree_normal(dwag* start, map< pair<int, int>, int >& output, char *fastq1, char *fastq2, bool bShortRun, int readlength );
 vector<Record> read_fasta( char* fa_filename );
 
 #endif // DWAG_H

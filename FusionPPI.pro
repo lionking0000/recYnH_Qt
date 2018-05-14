@@ -38,7 +38,8 @@ SOURCES += ./src/main.cpp\
     ./src/qtdensity.cpp \
     ./src/dwag.cpp \
     ./src/runtimeinfo.cpp \
-    ./src/result.cpp
+    ./src/result.cpp \
+    src/tabdialog.cpp
 
 HEADERS  += ./src/mainwindow.h \
     ./src/view.h \
@@ -51,11 +52,14 @@ HEADERS  += ./src/mainwindow.h \
     ./src/qtdensity.h \
     ./src/dwag.h \
     ./src/runtimeinfo.h \
-    ./src/result.h
+    ./src/result.h \
+    src/tabdialog.h
 
 FORMS    +=
 
-DISTFILES +=
+DISTFILES += \
+    AlignForm.ui.qml \
+    Align.qml
 LIBS += -lz
 
 

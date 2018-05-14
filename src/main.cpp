@@ -8,8 +8,8 @@
 int main(int argc, char *argv[])
 {
     CRobot robot( argc, argv );
-    robot.work();
-    robot.visualize();
+    //robot.visualize();  // for example matrix
+    robot.visualize_tab();
 }
 
 #else
