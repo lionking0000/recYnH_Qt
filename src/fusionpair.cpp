@@ -19,6 +19,16 @@ int FusionPair::Search(){
     cout << "read_fasta: " << this->_argv[2] << endl;
     this->records = read_fasta( this->_argv[2] );
 
+    for ( vector<Record>::iterator it = this->records.begin(); it != this->records.end(); ++it ){
+        Record aRecord = *it;
+        this->_colnames.push_back( aRecord.header );
+        this->_rownames.push_back( aRecord.header );
+    }
+
+    //for( int i = 0){
+    //    this->_colnames;
+    //}
+
     cout << "build_tree_from_records" << endl;
     build_tree_from_records( &this->start, records );
 

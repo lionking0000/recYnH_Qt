@@ -193,12 +193,12 @@ void MainWindow::populateFusionPPIScene(int nrow, int ncol, int width, int heigh
     //                 //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2_10336_AGGCCA_read2.fastq.gz",
     //                 "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-05-28.3A2E.txt"};
 
-    //char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
-    //                 //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
-    //                 //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
-    //                 "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
-    //                 "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
-    //                 "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+    char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                     //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
+                     //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
+                     "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                     "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                     "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
 
     //char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
     //                 //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
@@ -222,9 +222,12 @@ void MainWindow::populateFusionPPIScene(int nrow, int ncol, int width, int heigh
     //                 "/Volumes/jyang/work/Mireia/2017-02-04_MiSeq/17861-48-WCC-R10D10_S1_L001_R2_001.fastq.gz",
     //                 "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/ouput.17861.txt"};
 
-    //FusionPair* _fp = new FusionPair( argc, argv );
-    //_fp->bShortRun = _config.fp_bShortRun;
-    //_fp->Search();
+    if (_run->_pfp == NULL){
+        FusionPair* _fp = new FusionPair( argc, argv );
+        _fp->bShortRun = _run->_config.fp_bShortRun;
+        _fp->Search();
+        _run->_pfp = _fp;
+    }
 
     FusionPair* _fp = _run->_pfp;
 
@@ -237,6 +240,9 @@ void MainWindow::populateFusionPPIScene(int nrow, int ncol, int width, int heigh
     _run->_config.ncol = ncol;
 
     //fusion_pair_search( argc, argv );
+
+    nrow = _fp->_rownames.size();
+    ncol = _fp->_colnames.size();
 
     _scene1 = new QGraphicsScene(this);
 
