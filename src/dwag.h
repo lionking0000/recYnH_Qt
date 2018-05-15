@@ -35,4 +35,8 @@ int pair_search_with_tree(dwag* start, map< pair<int, int>, int >& output, char 
 int pair_search_with_tree_normal(dwag* start, map< pair<int, int>, int >& output, char *fastq1, char *fastq2, bool bShortRun, int readlength );
 vector<Record> read_fasta( char* fa_filename );
 
+void print_map_pair_values( map<pair<int, int>,int>& output );
+void print_map_pair_map( map<pair<int, int>,int>& output, vector<Record>& records );
+void write_map_pair_map( map<pair<int, int>,int>& output, vector<Record>& records, char * outfilename );
+
 #endif // DWAG_H

@@ -12,6 +12,7 @@ TabDialog::TabDialog(CRobot *robot, QWidget *parent)
     m_robot = robot;
 
     tabWidget = new QTabWidget;
+    tabWidget->addTab(new OptionTab(robot), tr("Options"));
     tabWidget->addTab(new AlignTab(robot), tr("Align"));
     tabWidget->addTab(new MergeTab(robot), tr("Merge"));
     tabWidget->addTab(new AverageTab(robot), tr("Average"));
@@ -27,6 +28,8 @@ TabDialog::TabDialog(CRobot *robot, QWidget *parent)
     mainLayout->addWidget(tabWidget);
     //mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
+
+    tabWidget->setCurrentIndex(1);
 
     setWindowTitle(tr("recYnH"));
 }
@@ -58,19 +61,21 @@ int AlignTab::align()
     std::string str_bait_fasta = this->m_bait_fasta_Label.text().toStdString();
     std::string str_bait_fastq = this->m_bait_fastq_Label.text().toStdString();
     std::string str_prey_fastq = this->m_prey_fastq_Label.text().toStdString();
+    std::string str_output_file = this->m_output_file_Label.text().toStdString();
 
     char* cstr_bait_fasta = (char*) str_bait_fasta.c_str();
     char* cstr_bait_fastq = (char*) str_bait_fastq.c_str();
     char* cstr_prey_fastq = (char*) str_prey_fastq.c_str();
+    char* cstr_output_file = (char*) str_output_file.c_str();
 
-    cstr_bait_fasta = "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta";
-    cstr_bait_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz";
-    cstr_prey_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz";
-
+    //cstr_bait_fasta = "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta";
+    //cstr_bait_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz";
+    //cstr_prey_fastq = "/Volumes//users/smaurer/sequencing_data/Mireia_Garriga/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz";
+    //cstr_output_file = "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt"
     char* argv[] = { "./kmer", "FusionPairSearch", cstr_bait_fasta,
                      cstr_bait_fastq,
                      cstr_prey_fastq,
-                     "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+                     cstr_output_file, "125"};
 
 
     FusionPair* _fp = new FusionPair( argc, argv );
@@ -106,9 +111,12 @@ QString AlignTab::browse1()
                                     tr("Fasta Files (*.fa, *.fasta, *.txt)"),
                                     &selectedFilter,
                                     options);
-        if (!fileName.isEmpty())
+        if (!fileName.isEmpty()){
             m_bait_fasta_Label.setText(fileName);
-
+            if (this->m_bait_prey_fasta_Check.checkState() == Qt::Checked){
+                m_prey_fasta_Label.setText(fileName);
+            }
+        }
     this->updated();
 
     return fileName;
@@ -125,8 +133,12 @@ QString AlignTab::browse2()
                                     tr("Fasta Files (*.fa, *.fasta, *.txt)"),
                                     &selectedFilter,
                                     options);
-        if (!fileName.isEmpty())
+        if (!fileName.isEmpty()){
             m_prey_fasta_Label.setText(fileName);
+            if (this->m_bait_prey_fasta_Check.checkState() == Qt::Checked){
+                m_bait_fasta_Label.setText(fileName);
+            }
+        }
         this->updated();
 
     return fileName;
@@ -167,6 +179,44 @@ QString AlignTab::browse4()
 
     return fileName;
 }
+
+QString AlignTab::browse5()
+{
+    QFileDialog::Options options;
+    QString selectedFilter = "*.txt";
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Select PPI Pair Output File)"),
+                                    this->m_output_file_Label.text(),
+                                    tr("PPI Pair Output File (*.txt)"),
+                                    &selectedFilter,
+                                    options);
+        if (!fileName.isEmpty())
+            m_output_file_Label.setText(fileName);
+    this->updated();
+
+    return fileName;
+}
+
+OptionTab::OptionTab(CRobot *robot, QWidget *parent)
+    : QWidget(parent)
+{
+    m_robot = robot;
+    QLabel *descriptionLabel = new QLabel(tr("General options"));
+
+    QGroupBox *alignOptGroup = new QGroupBox(tr("Options for align"));
+    QGroupBox *mergeOptGroup = new QGroupBox(tr("Options for merge"));
+    QGroupBox *averageOptGroup = new QGroupBox(tr("Options for average"));
+
+
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addWidget( alignOptGroup );
+    mainLayout->addWidget( mergeOptGroup );
+    mainLayout->addWidget( averageOptGroup );
+    mainLayout->addStretch(1);
+    setLayout(mainLayout);
+}
+
 
 AlignTab::AlignTab(CRobot *robot, QWidget *parent)
     : QWidget(parent)
@@ -231,6 +281,23 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
 
     //---------------------------------------------------------------------
 
+    QGroupBox *outputGroup = new QGroupBox(tr("Output File"));
+
+    //QLabel *m_output_file_Label = new QLabel("Output filepath");
+    //QLabel *m_output_file_Label = new QLabel("/Users/jyang/2017-03-03_MiSeq.S1.txt");
+    m_output_file_Label.setText("/Users/jyang/2017-03-03_MiSeq.S1.txt");
+
+    QPushButton* browseButton5 = new QPushButton(tr("&Browse..."), this);
+    connect(browseButton5, &QAbstractButton::clicked, this, &AlignTab::browse5);
+
+    QGridLayout *outputLayout = new QGridLayout;
+
+    outputLayout->addWidget(&m_output_file_Label,0,0,1,4);
+    outputLayout->addWidget(browseButton5,0,4,1,1);
+    outputGroup->setLayout(outputLayout);
+
+    //---------------------------------------------------------------------
+
     QGroupBox *optionGroup = new QGroupBox(tr("Options"));
 
     QLabel *optionLabel1 = new QLabel("Use the bait and prey fasta as same file");
@@ -262,6 +329,7 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addWidget(fastaGroup);
     mainLayout->addWidget(seqGroup);
+    mainLayout->addWidget(outputGroup);
     mainLayout->addWidget(optionGroup);
     mainLayout->addWidget(runGroup);
     mainLayout->addStretch(1);
@@ -309,6 +377,9 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
 
 int MergeTab::merge()
 {
+    return 0;
+
+
     int argc = 7;
     char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
                      "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
@@ -344,12 +415,90 @@ int MergeTab::merge()
     return 0;
 }
 
+QString MergeTab::browse1()
+{
+    QFileDialog::Options options;
+    QString selectedFilter = "*.fa";
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                    tr("Select a Blaster File)"),
+                                    this->m_non_selection_Label.text(),
+                                    tr("Fasta Files (*.fa, *.fasta, *.txt)"),
+                                    &selectedFilter,
+                                    options);
+        if (!fileName.isEmpty()){
+            m_non_selection_Label.setText(fileName);
+        }
+    //this->updated();
+
+    return fileName;
+}
+
+QString MergeTab::browse2()
+{
+    QFileDialog::Options options;
+    QString selectedFilter = "*.fa";
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                    tr("Select a Blaster File)"),
+                                    this->m_selection_Label.text(),
+                                    tr("Fasta Files (*.fa, *.fasta, *.txt)"),
+                                    &selectedFilter,
+                                    options);
+        if (!fileName.isEmpty()){
+            m_selection_Label.setText(fileName);
+        }
+    //this->updated();
+
+    return fileName;
+}
+
+QString MergeTab::browse3()
+{
+    QFileDialog::Options options;
+    QString selectedFilter = "*.fa";
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                    tr("Select a Blaster File)"),
+                                    this->m_output_file_Label.text(),
+                                    tr("Fasta Files (*.fa, *.fasta, *.txt)"),
+                                    &selectedFilter,
+                                    options);
+        if (!fileName.isEmpty()){
+            m_output_file_Label.setText(fileName);
+        }
+    //this->updated();
+
+    return fileName;
+}
 
 MergeTab::MergeTab(CRobot *robot, QWidget *parent)
     : QWidget(parent)
 {
     m_robot = robot;
     QLabel *descriptionLabel = new QLabel(tr("Merge two interaction matries to generate an interaction score matrix"));
+
+    QGroupBox *non_selectionGroup = new QGroupBox(tr("Non-Selection"));
+    m_non_selection_Label.setText("/Users/jyang/2017-03-03_MiSeq.S1.txt");
+    QPushButton* m_browseButton1 = new QPushButton(tr("&Browse..."), this);
+    connect(m_browseButton1, &QAbstractButton::clicked, this, &MergeTab::browse1);
+    QGridLayout *non_selectionLayout = new QGridLayout;
+    non_selectionLayout->addWidget(&m_non_selection_Label, 0, 0, 1 ,4);
+    non_selectionLayout->addWidget(m_browseButton1, 0, 4,1,1);
+    non_selectionGroup->setLayout(non_selectionLayout);
+
+    //---------------------------------------------------------------------
+
+    QGroupBox *selectionGroup = new QGroupBox(tr("Selection"));
+    m_selection_Label.setText("/Users/jyang/2017-03-03_MiSeq.S2.txt");
+    QPushButton* m_browseButton2 = new QPushButton(tr("&Browse..."), this);
+    connect(m_browseButton2, &QAbstractButton::clicked, this, &MergeTab::browse2);
+    QGridLayout *selectionLayout = new QGridLayout;
+    selectionLayout->addWidget(&m_selection_Label, 0, 0, 1 ,4);
+    selectionLayout->addWidget(m_browseButton2, 0, 4,1,1);
+    selectionGroup->setLayout(selectionLayout);
+
+    //---------------------------------------------------------------------
 
     QGroupBox *runGroup = new QGroupBox(tr("Run"));
     QProgressBar* m_progressBar = new QProgressBar(this);
@@ -360,9 +509,46 @@ MergeTab::MergeTab(CRobot *robot, QWidget *parent)
     runLayout->addWidget(m_browseButton5,0,4,1,1);
     runGroup->setLayout(runLayout);
 
+    //---------------------------------------------------------------------
 
+    QGroupBox *outputGroup = new QGroupBox(tr("Output File"));
+
+    //QLabel *m_output_file_Label = new QLabel("Output filepath");
+    //QLabel *m_output_file_Label = new QLabel("/Users/jyang/2017-03-03_MiSeq.S1.txt");
+    m_output_file_Label.setText("/Users/jyang/2017-03-03_MiSeq.IS1.txt");
+
+    QPushButton* browseButton5 = new QPushButton(tr("&Browse..."), this);
+    connect(browseButton5, &QAbstractButton::clicked, this, &MergeTab::browse3);
+
+    QGridLayout *outputLayout = new QGridLayout;
+
+    outputLayout->addWidget(&m_output_file_Label,0,0,1,4);
+    outputLayout->addWidget(browseButton5,0,4,1,1);
+    outputGroup->setLayout(outputLayout);
+
+    //---------------------------------------------------------------------
+
+    QGroupBox *optionGroup = new QGroupBox(tr("Options"));
+
+    QLabel *optionLabel1 = new QLabel("Use the bait and prey fasta as same file");
+
+    //m_bait_prey_fasta_Check.setChecked( true );
+    //connect(&m_bait_prey_fasta_Check, &QAbstractButton::clicked, this, &AlignTab::option1);
+
+    QGridLayout *optionLayout = new QGridLayout;
+
+    //optionGroup->addWidget(seqFile1);
+    optionLayout->addWidget(optionLabel1,0,0,1,4);
+    //optionLayout->addWidget(&m_bait_prey_fasta_Check,0,4,1,1);
+    optionGroup->setLayout(optionLayout);
+
+    //---------------------------------------------------------------------
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(descriptionLabel);
+    mainLayout->addWidget(non_selectionGroup);
+    mainLayout->addWidget(selectionGroup);
+    mainLayout->addWidget(outputGroup);
+    mainLayout->addWidget(optionGroup);
     mainLayout->addWidget(runGroup);
     setLayout(mainLayout);
 }

@@ -36,10 +36,10 @@ int FusionPair::Search_Normal(){
     //pair_search_with_tree( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) ); // for separated fastq file
     pair_search_with_tree_normal( &this->start, this->output, this->_argv[3], this->_argv[4], this->bShortRun, atoi(this->_argv[6]) );
 
-    //print_map_pair_values( output );
-    //print_map_pair_map( output, records );
+    print_map_pair_values( output );
+    print_map_pair_map( output, records );
     //write_comment_conditions( this->_argv[5] );
-    //write_map_pair_map( output, records, this->_argv[5] );
+    write_map_pair_map( output, records, this->_argv[5] );
 }
 
 int FusionPair::Search(){

@@ -53,7 +53,8 @@ HEADERS  += ./src/mainwindow.h \
     ./src/dwag.h \
     ./src/runtimeinfo.h \
     ./src/result.h \
-    src/tabdialog.h
+    src/tabdialog.h \
+    src/gmm.h
 
 FORMS    +=
 

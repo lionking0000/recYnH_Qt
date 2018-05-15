@@ -3,6 +3,7 @@
 #include <iostream> // for cout
 #include <fstream>  // for ifstream
 #include "zlib.h"  // for gzFile; presumes zstd library is installed
+#include "gmm.h"
 
 #define MIS_MATCH_CUT   5
 #define MIN_LEVEL_CUT   30
@@ -19,8 +20,73 @@
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 
+
+#include <armadillo>
+
+using namespace arma;
+
+int gmm_test()
+{
+    // create synthetic data containing
+    // 2 clusters with normal distribution
+    uword d = 1; // dimensionality
+    uword N = 10000; // number of samples (vectors)
+    mat data(d, N, fill::zeros);
+    vec mean1 = linspace<vec>(1,d,d);
+    vec mean2 = mean1 + 5;
+    uword i = 0;
+    while(i < N)
+    {
+        if(i < N) { data.col(i) = mean1 + randn<vec>(d); ++i; }
+        if(i < N) { data.col(i) = mean1 + randn<vec>(d); ++i; }
+        if(i < N) { data.col(i) = mean2 + randn<vec>(d); ++i; }
+    }
+    // model the data as a diagonal GMM with 2 Gaussians
+    gmm_diag model;
+    bool status = model.learn(data, 2, maha_dist, random_subset,10, 5, 1e-10, true);
+    if(status == false) { cout << "learning failed" << endl; }
+
+    model.means.print("means:");
+
+    double overall_likelihood = model.avg_log_p(data);
+
+    rowvec set_likelihood = model.log_p( data.cols(0,9) );
+    double scalar_likelihood = model.log_p( data.col(0) );
+
+    uword gaus_id = model.assign( data.col(0), eucl_dist );
+    urowvec gaus_ids = model.assign( data.cols(0,9), prob_dist );
+
+    urowvec histogram1 = model.raw_hist (data, prob_dist);
+    rowvec histogram2 = model.norm_hist(data, eucl_dist);
+
+    cout << "histogram2\t" << histogram2[0] << "\t" << histogram2[1] << endl;
+
+    model.save("/Users/jyang/my_model.gmm");
+
+    mat modified_dcovs = 2 * model.dcovs;
+
+    model.set_dcovs(modified_dcovs);
+
+    return 0;
+}
+
 vector<Record> read_fasta( char* fa_filename )
 {
+    gmm_test();
+    /*
+   GaussianMixture aGmm = GaussianMixture(4,4,0.1,0.1);
+   //aGmm.setValue();
+
+   Eigen::VectorXf ax;
+   ax << 1,2,3,4;
+
+   Eigen::VectorXf bx;
+    bx << 2,3,4,5;
+
+    aGmm.setValue(ax,bx);
+
+    //aGmm.value();
+    */
    vector<Record> records;
 
    ifstream fin( fa_filename );
@@ -191,29 +257,40 @@ int pair_search_with_tree_normal(dwag* start, map< pair<int, int>, int >& output
     std::cout << fastq1 << std::endl;
     std::cout << fastq2 << std::endl;
 
-    gzFile infile = gzopen(fastq1, "rb");
-    if (!infile) return -1;
+    gzFile infile1 = gzopen(fastq1, "rb");
+    if (!infile1) return -1;
+
+    gzFile infile2 = gzopen(fastq2, "rb");
+    if (!infile2) return -1;
 
     char buffer[LENS];
     int count = 0;
     int found_cnt1 = 0;
+    int found_cnt2 = 0;
     int global_mismatch = 1000;
+    int found_both_cnt = 0;
     dwag* found1 = NULL;
+    dwag* found2 = NULL;
+
     int i = 0;
-    while( 0 != gzgets(infile, buffer1, LENS) ){
+    while( 0 != gzgets(infile1, buffer1, LENS) ){
+        if ( 0 == gzgets(infile2, buffer2, LENS) ){
+            break;
+        }
+
         i++;
+        if ( i % 100000 == 0 ) {
+            cout << count << "\t" << found_cnt1 << "\t" << found_cnt2 << "\t" << found_both_cnt << "\t" << found_both_cnt / (float) count * 100.0 << endl;
+            if (  i > 1000000 && bShortRun == true ) break;
+        }
+
         if ( i % 4 != 2 ) continue;
         count += 1;
-        //cout << buffer << endl;
         global_mismatch = 1000;
-        //string value(buffer);
-        //found = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found );
-        //found1 = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found1 ); // for read1
-        //if ( found1 != NULL ) found_cnt += 1;
 
         found1 = NULL;
         if ( found1 == NULL ) {
-            for ( int xx = 0; xx < 100; xx ++ ){
+            for ( int xx = 30; xx < 60; xx ++ ){
                 found1 = mismatch_search_tree_c( start, &buffer1[xx], 0, 0, &global_mismatch, found1 ); // for read1
                 if ( found1 != NULL ) break;
             }
@@ -221,9 +298,34 @@ int pair_search_with_tree_normal(dwag* start, map< pair<int, int>, int >& output
         if ( found1 != NULL ){
             found_cnt1 += 1;
         }
+
+        global_mismatch = 1000;
+        found2 = NULL;
+        if ( found2 == NULL ) {
+            for ( int xx = 30; xx < 60; xx ++ ){
+                found2 = mismatch_search_tree_c( start, &buffer2[xx], 0, 0, &global_mismatch, found2 ); // for read1
+                 if ( found2 != NULL ) break;
+            }
+        }
+        if ( found2 != NULL ){
+            /*if ( global_mismatch == MIS_MATCH_CUT-1 ){
+                cout << "READ2: " << i << "\t" << global_mismatch << "\t" << found2->index << endl;
+                cout << "REF: " << get_sequence( found2 ) << endl;
+                cout << "QUR: " << string( &buffer2[54] ) << endl;
+            }*/
+            found_cnt2 += 1;
+        }
+        if ( found1 != NULL && found2 != NULL ){
+            ++output[pair<int, int>(found1->index, found2->index)];
+            found_both_cnt ++;
+        }
     }
-    cout << "Total: " << count << "\t" << "Found: " << found_cnt1 << endl;
-    gzclose(infile);
+    cout << "Total: " << count << endl;
+    cout << "Found 1: " << found_cnt1 << "\t" << found_cnt1 / (float) count * 100.0 << endl;
+    cout << "Found 2: " << found_cnt2 << "\t" << found_cnt2 / (float) count * 100.0 << endl;
+    cout << "Found Both: " << found_both_cnt << "\t" << found_both_cnt / (float) count * 100.0 << endl;
+    gzclose( infile1 );
+    gzclose( infile2 );
 
 /*
     io::filtering_istream in;
@@ -282,7 +384,7 @@ int pair_search_with_tree(dwag* start, map< pair<int, int>, int >& output, char 
         i++;
         if ( i % 100000 == 0 ) {
             cout << i << "\t" << found_cnt1 << "\t" << found_cnt2 << "\t" << found_both_cnt << "\t" << found_both_cnt / (float) i << endl;
-            if ( bShortRun == true ) break;
+            if (  i > 1000000 && bShortRun == true ) break;
         }
         found1 = NULL;
         //found1 = mismatch_search_tree_c( start, &buffer1[52], 0, 0, &global_mismatch, found1 ); // for read1
