@@ -6,6 +6,8 @@
 #include <vector> // for vector
 #include <map> // for map
 
+#include "creapairmatrix.h"
+
 using namespace std;
 
 struct dwag {
@@ -38,5 +40,6 @@ vector<Record> read_fasta( char* fa_filename );
 void print_map_pair_values( map<pair<int, int>,int>& output );
 void print_map_pair_map( map<pair<int, int>,int>& output, vector<Record>& records );
 void write_map_pair_map( map<pair<int, int>,int>& output, vector<Record>& records, char * outfilename );
+vector<vector<string>>& ReadTSV(const char* filename);
 
 #endif // DWAG_H

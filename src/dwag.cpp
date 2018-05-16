@@ -25,6 +25,48 @@
 
 using namespace arma;
 
+vector<vector<string>>& ReadTSV(const char* filename)
+{
+    using namespace std;
+
+    ifstream infile(filename);
+    if (!infile) {
+        cout << "unable to load file" << endl;
+    }
+    string str;
+
+    vector<vector<string>> vvStr;
+
+    vector<string> vecTitle;
+    int pos1, pos2;
+
+    // title
+
+    getline(infile, str);
+    pos1 = 0;
+    while((pos2 = str.find('\t',pos1))!= string::npos)
+    {
+        vecTitle.push_back(str.substr(pos1, pos2-pos1));
+        pos1 = ++pos2;
+    }
+
+    // values
+    while (getline(infile, str))
+    {
+        pos1 = 0;
+        vector<string> vStr;
+        while((pos2 = str.find('\t',pos1))!= string::npos)
+        {
+            vStr.push_back(str.substr(pos1, pos2-pos1));
+            pos1 = ++pos2;
+        }
+        vStr.push_back(str.substr(pos1, string::npos));
+        vvStr.push_back(vStr);
+    }
+
+    return vvStr;
+}
+
 int gmm_test()
 {
     // create synthetic data containing

@@ -15,7 +15,32 @@ class QCheckBox;
 class QPushButton;
 class QProgressBar;
 class CRobot;
+class CReadPairMatrix;
 QT_END_NAMESPACE
+
+
+class MapViewDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    MapViewDialog()
+    {
+        QDialog *subDialog = new QDialog;
+        subDialog->setWindowTitle("Sub Dialog");
+        //QPushButton *button = new QPushButton("Push to open new dialog", this);
+        //connect(button, SIGNAL(clicked()), subDialog, SLOT(show()));
+    }
+
+    explicit MapViewDialog(CRobot *robot, CReadPairMatrix* readPairMatrix, QWidget *parent = 0);
+    CRobot* m_robot;
+    CReadPairMatrix* m_readPairMatrix;
+
+private:
+    QTabWidget *tabWidget;
+
+};
+
 
 class OptionTab : public QWidget
 {
@@ -97,6 +122,8 @@ class AverageTab : public QWidget
 public:
     explicit AverageTab(CRobot *robot, QWidget *parent = 0);
     CRobot* m_robot;
+
+    int average();
 };
 
 
@@ -116,6 +143,5 @@ private:
 
 
 };
-
 
 #endif

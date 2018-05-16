@@ -39,7 +39,8 @@ SOURCES += ./src/main.cpp\
     ./src/dwag.cpp \
     ./src/runtimeinfo.cpp \
     ./src/result.cpp \
-    src/tabdialog.cpp
+    src/tabdialog.cpp \
+    src/creapairmatrix.cpp
 
 HEADERS  += ./src/mainwindow.h \
     ./src/view.h \
@@ -54,7 +55,8 @@ HEADERS  += ./src/mainwindow.h \
     ./src/runtimeinfo.h \
     ./src/result.h \
     src/tabdialog.h \
-    src/gmm.h
+    src/gmm.h \
+    src/creapairmatrix.h
 
 FORMS    +=
 

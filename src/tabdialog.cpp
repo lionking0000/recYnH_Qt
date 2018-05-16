@@ -3,8 +3,8 @@
 #include "tabdialog.h"
 #include "robot.h"
 #include "fusionpair.h"
+#include "mainwindow.h"
 
-//! [0]
 TabDialog::TabDialog(CRobot *robot, QWidget *parent)
     : QDialog(parent)
 {
@@ -34,6 +34,17 @@ TabDialog::TabDialog(CRobot *robot, QWidget *parent)
     setWindowTitle(tr("recYnH"));
 }
 
+MapViewDialog::MapViewDialog(CRobot *robot, CReadPairMatrix *readPairMatrix, QWidget *parent)
+    : QDialog(parent)
+{
+    m_robot = robot;
+    m_readPairMatrix = readPairMatrix;
+
+    //QVBoxLayout *mainLayout = new QVBoxLayout;
+    //setLayout(mainLayout);
+
+    setWindowTitle(tr("MapView"));
+}
 
 int AlignTab::option1()
 {
@@ -377,6 +388,96 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
 
 int MergeTab::merge()
 {
+    std::string str_non_selection_filepath = this->m_non_selection_Label.text().toStdString();
+    char* cstr_non_selection_filepath = (char*) str_non_selection_filepath.c_str();
+
+    std::string str_selection_filepath = this->m_selection_Label.text().toStdString();
+    char* cstr_selection_filepath = (char*) str_selection_filepath.c_str();
+
+    //ReadTSV( cstr_selection_filepath );
+
+    CReadPairMatrix aNonSelectionReadPair;// = CReadPairMatrix();
+    CReadPairMatrix aSelectionReadPair;// = CReadPairMatrix();
+
+    aNonSelectionReadPair.ReadTSV( cstr_non_selection_filepath );
+    aSelectionReadPair.ReadTSV( cstr_selection_filepath );
+
+    aNonSelectionReadPair.Nullmatrix();
+    aSelectionReadPair.GMM_Fit();
+
+
+
+    if (this->m_robot->_run._pfp == NULL){
+        // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
+
+        int argc = 7;
+
+        char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                         "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+
+        FusionPair* _fp = new FusionPair( argc, argv );
+        _fp->bShortRun = this->m_robot->_run._config.fp_bShortRun;
+        //_fp->Search();
+        for( string name : aNonSelectionReadPair.vecColName )
+            _fp->_colnames.push_back( name );
+        for( string name : aNonSelectionReadPair.vecRowName )
+            _fp->_rownames.push_back( name );
+        int i = 0;
+        for(vector<float> values : aNonSelectionReadPair.matrixValue){
+            int j = 0;
+            for(float value : values){
+                _fp->output[pair<int, int>(i, j)] = int(value);
+                j++;
+            }
+            i++;
+        }
+
+        this->m_robot->_run._pfp = _fp;
+    }
+
+    MainWindow* non_selection_window = new MainWindow(&this->m_robot->_run, 0);
+    non_selection_window->setWindowTitle(tr("Non Selection Read Pairs"));
+    non_selection_window->show();
+
+    if (1){
+        // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
+
+        int argc = 7;
+
+        char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                         "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+
+        FusionPair* _fp = new FusionPair( argc, argv );
+        _fp->bShortRun = this->m_robot->_run._config.fp_bShortRun;
+        for( string name : aSelectionReadPair.vecColName )
+            _fp->_colnames.push_back( name );
+        for( string name : aSelectionReadPair.vecRowName )
+            _fp->_rownames.push_back( name );
+        int i = 0;
+        for(vector<float> values : aSelectionReadPair.matrixValue){
+            int j = 0;
+            for(float value : values){
+                _fp->output[pair<int, int>(i, j)] = int(value);
+                j++;
+            }
+            i++;
+        }
+
+        this->m_robot->_run._pfp = _fp;
+    }
+
+    MainWindow* selection_window = new MainWindow(&this->m_robot->_run, 0);
+    selection_window->setWindowTitle(tr("Selection Read Pairs"));
+    selection_window->show();
+
     return 0;
 
 
@@ -555,14 +656,122 @@ MergeTab::MergeTab(CRobot *robot, QWidget *parent)
 
 
 
+int AverageTab::average(){
+
+
+    CReadPairMatrix* aNonSelectionReadPair = new CReadPairMatrix();// = CReadPairMatrix();
+    CReadPairMatrix* aSelectionReadPair = new CReadPairMatrix();// = CReadPairMatrix();
+
+    aNonSelectionReadPair->ReadTSV( "/Users/jyang/2017-03-03_MiSeq.S1.txt" );
+    aSelectionReadPair->ReadTSV( "/Users/jyang/2017-03-03_MiSeq.S2.txt" );
+
+    //MapViewDialog aDialog( this->m_robot, &aNonSelectionReadPair, parent() );
+    //MapViewDialog(CRobot *robot, CReadPairMatrix* readPairMatrix, QWidget *parent = 0);
+    //aDialog.show();
+
+    //MapViewDialog* aDialog = new MapViewDialog();// this->m_robot, &aNonSelectionReadPair, this->parentWidget() );
+    //MapViewDialog aDialog( this->m_robot, aNonSelectionReadPair, this->parentWidget() );
+    //MapViewDialog(CRobot *robot, CReadPairMatrix* readPairMatrix, QWidget *parent = 0);
+    //aDialog.show();
+
+    if (this->m_robot->_run._pfp == NULL){
+        // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
+
+        int argc = 7;
+
+        char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                         "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+
+        FusionPair* _fp = new FusionPair( argc, argv );
+        _fp->bShortRun = this->m_robot->_run._config.fp_bShortRun;
+        //_fp->Search();
+        for( string name : aNonSelectionReadPair->vecColName )
+            _fp->_colnames.push_back( name );
+        for( string name : aNonSelectionReadPair->vecRowName )
+            _fp->_rownames.push_back( name );
+        int i = 0;
+        for(vector<float> values : aNonSelectionReadPair->matrixValue){
+            int j = 0;
+            for(float value : values){
+                _fp->output[pair<int, int>(i, j)] = int(value);
+                j++;
+            }
+            i++;
+        }
+
+        this->m_robot->_run._pfp = _fp;
+    }
+
+    MainWindow* non_selection_window = new MainWindow(&this->m_robot->_run, 0);
+    non_selection_window->setWindowTitle(tr("Non Selection Read Pairs"));
+    non_selection_window->show();
+
+    if (1){
+        // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
+
+        int argc = 7;
+
+        char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read1.fastq.gz",
+                         //"/users/lserrano/sequencing_data/Jae-Seong_Yang/2015-05-28/3A2E_10337_GGAGCC_read2.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
+                         "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
+                         "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
+
+        FusionPair* _fp = new FusionPair( argc, argv );
+        _fp->bShortRun = this->m_robot->_run._config.fp_bShortRun;
+        for( string name : aSelectionReadPair->vecColName )
+            _fp->_colnames.push_back( name );
+        for( string name : aSelectionReadPair->vecRowName )
+            _fp->_rownames.push_back( name );
+        int i = 0;
+        for(vector<float> values : aSelectionReadPair->matrixValue){
+            int j = 0;
+            for(float value : values){
+                _fp->output[pair<int, int>(i, j)] = int(value);
+                j++;
+            }
+            i++;
+        }
+
+        this->m_robot->_run._pfp = _fp;
+    }
+
+    MainWindow* selection_window = new MainWindow(&this->m_robot->_run, 0);
+    selection_window->setWindowTitle(tr("Selection Read Pairs"));
+    selection_window->show();
+
+    //MapViewDialog* aDialog = new MapViewDialog( this->m_robot, aNonSelectionReadPair, this->parentWidget() );
+    //aDialog->show();
+}
+
 AverageTab::AverageTab(CRobot *robot, QWidget *parent)
     : QWidget(parent)
 {
     m_robot = robot;
     QLabel *descriptionLabel = new QLabel(tr("Average several interaction score matrices"));
 
+    //---------------------------------------------------------------------
+
+    QGroupBox *runGroup = new QGroupBox(tr("Run"));
+    QProgressBar* m_progressBar = new QProgressBar(this);
+    QPushButton* m_browseButton5 = new QPushButton(tr("&Average..."), this);
+    connect(m_browseButton5, &QAbstractButton::clicked, this, &AverageTab::average);
+    QGridLayout *runLayout = new QGridLayout;
+    runLayout->addWidget(m_progressBar,0,0,1,4);
+    runLayout->addWidget(m_browseButton5,0,4,1,1);
+    runGroup->setLayout(runLayout);
+
+    //---------------------------------------------------------------------
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(descriptionLabel);
+    layout->addWidget(runGroup);
+
     setLayout(layout);
 }
 
