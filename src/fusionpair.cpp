@@ -6,6 +6,7 @@
 
 FusionPair::FusionPair()
 {
+    this->bShortRun = false; //true;
 }
 
 FusionPair::FusionPair(int argc, char *argv[])

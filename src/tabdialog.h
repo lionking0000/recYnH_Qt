@@ -18,6 +18,7 @@ class CRobot;
 class CReadPairMatrix;
 QT_END_NAMESPACE
 
+using namespace std;
 
 class MapViewDialog : public QDialog
 {
@@ -110,6 +111,7 @@ public:
     QString browse2();  // bait fasta
     QString browse3();  // bait fasta
 
+    void createFusionPair( vector<string>& colNames, vector<string>& rowNames, vector<vector<float>>& matrixValue);
 };
 
 

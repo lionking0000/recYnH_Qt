@@ -385,6 +385,31 @@ AlignTab::AlignTab(CRobot *robot, QWidget *parent)
     */
 }
 
+void MergeTab::createFusionPair( vector<string>& colNames, vector<string>& rowNames, vector<vector<float>>& matrixValue){
+    if ( this->m_robot->_run._pfp != NULL ){
+        delete this->m_robot->_run._pfp;
+    }
+
+    FusionPair* _fp = new FusionPair();
+
+    _fp->bShortRun = this->m_robot->_run._config.fp_bShortRun;
+
+    for( string name : colNames )
+        _fp->_colnames.push_back( name );
+    for( string name : rowNames )
+        _fp->_rownames.push_back( name );
+    int i = 0;
+    for(vector<float> values : matrixValue){
+        int j = 0;
+        for(float value : values){
+            _fp->output[pair<int, int>(i, j)] = int(value);
+            j++;
+        }
+        i++;
+    }
+
+    this->m_robot->_run._pfp = _fp;
+}
 
 int MergeTab::merge()
 {
@@ -402,11 +427,7 @@ int MergeTab::merge()
     aNonSelectionReadPair.ReadTSV( cstr_non_selection_filepath );
     aSelectionReadPair.ReadTSV( cstr_selection_filepath );
 
-    aNonSelectionReadPair.Nullmatrix();
-    aSelectionReadPair.GMM_Fit();
-
-
-
+    /*
     if (this->m_robot->_run._pfp == NULL){
         // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
 
@@ -438,11 +459,15 @@ int MergeTab::merge()
 
         this->m_robot->_run._pfp = _fp;
     }
+    */
+
+    createFusionPair( aNonSelectionReadPair.vecColName, aNonSelectionReadPair.vecRowName, aNonSelectionReadPair.matrixValue );
 
     MainWindow* non_selection_window = new MainWindow(&this->m_robot->_run, 0);
     non_selection_window->setWindowTitle(tr("Non Selection Read Pairs"));
     non_selection_window->show();
 
+    /*
     if (1){
         // /Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz
 
@@ -473,20 +498,42 @@ int MergeTab::merge()
 
         this->m_robot->_run._pfp = _fp;
     }
+    */
+
+    createFusionPair( aSelectionReadPair.vecColName, aSelectionReadPair.vecRowName, aSelectionReadPair.matrixValue );
 
     MainWindow* selection_window = new MainWindow(&this->m_robot->_run, 0);
     selection_window->setWindowTitle(tr("Selection Read Pairs"));
     selection_window->show();
 
+    /* */
+    aNonSelectionReadPair.Nullmatrix();
+    createFusionPair( aNonSelectionReadPair.vecColName, aNonSelectionReadPair.vecRowName, aNonSelectionReadPair.nullMatrixValue );
+
+    this->m_robot->_run.m_color_ratio = 1000.0;
+    MainWindow* null_window = new MainWindow(&this->m_robot->_run, 0);
+    null_window->setWindowTitle(tr("NonSelection Null Matrix"));
+    null_window->show();
+
+    /* */
+    aSelectionReadPair.GMM_Fit();
+    createFusionPair( aSelectionReadPair.vecColName, aSelectionReadPair.vecRowName, aSelectionReadPair.filterdMatrixValue );
+
+    this->m_robot->_run.m_color_ratio = 1000.0;
+    MainWindow* filtered_window = new MainWindow(&this->m_robot->_run, 0);
+    filtered_window->setWindowTitle(tr("Selection Filtered Matrix"));
+    filtered_window->show();
+
+
     return 0;
 
+    /*
 
     int argc = 7;
     char* argv[] = { "./kmer", "FusionPairSearch", "/Volumes/users/lserrano/jyang/work/Mireia/2015-05-28/40_40.upper.fasta",
                      "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read1.fastq.gz",
                      "/Volumes/users/lserrano/jyang/work/Mireia/src_backup_20170622/data/2015-07-07/PCR_TS_A2_10494_GGAGCC_read2.fastq.gz",
                      "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
-    /*
     std::string str_bait_fasta = this->m_bait_fasta_Label.text().toStdString();
     std::string str_bait_fastq = this->m_bait_fastq_Label.text().toStdString();
     std::string str_prey_fastq = this->m_prey_fastq_Label.text().toStdString();
@@ -504,7 +551,6 @@ int MergeTab::merge()
                      cstr_prey_fastq,
                      "/Users/jyang/Dropbox_CRG/Code/temp/heatmap/output/2015-07-07.A2.txt", "125"};
 
-    */
     FusionPair* _fp = new FusionPair( argc, argv );
     _fp->bShortRun = m_robot->_run._config.fp_bShortRun;
     _fp->Search();
@@ -514,6 +560,8 @@ int MergeTab::merge()
         //this->update();
     }
     return 0;
+    */
+
 }
 
 QString MergeTab::browse1()

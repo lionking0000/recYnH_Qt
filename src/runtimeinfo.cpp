@@ -4,6 +4,7 @@
 RuntimeInfo::RuntimeInfo()
 {
     _pfp = NULL;
+    m_color_ratio = 1000.0;
 }
 
 

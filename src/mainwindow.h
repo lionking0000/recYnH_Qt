@@ -110,6 +110,8 @@ public:
 
     void SetRuntime(RuntimeInfo *_run) { _run = _run; }
 
+    double m_color_ratio = 1000.0;
+
 private:
     void setupMatrix();
     void populateScene();

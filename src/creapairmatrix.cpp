@@ -106,9 +106,9 @@ int CReadPairMatrix::Nullmatrix()
     nullMatrixValue.empty();
     for(int i = 0; i < nCols; i++ ){
         vector<float> x;
-        for(int j = 0; i < nRows; i++ ){
+        for(int j = 0; j < nRows; j++ ){
             float nullValue = colSums[i] * rowSums[j];
-            x.push_back( nullValue * TotalSum );
+            x.push_back( int(nullValue * TotalSum) );
         }
         nullMatrixValue.push_back(x);
     }

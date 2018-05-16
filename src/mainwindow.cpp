@@ -53,6 +53,7 @@ MainWindow::MainWindow(RuntimeInfo *run, QWidget *parent ) : _run(run), QWidget(
 #endif
 {
     //populateScene();
+    m_color_ratio = 1000.0;
 
     QColor startColor(_run->_config.start_color_red, _run->_config.start_color_green, _run->_config.start_color_blue);
     QColor endColor(_run->_config.end_color_red, _run->_config.end_color_green, _run->_config.end_color_blue);
@@ -255,6 +256,7 @@ void MainWindow::populateFusionPPIScene(int nrow, int ncol, int width, int heigh
     Chip::SetWidth( width );
     Chip::SetHeight( height );
 
+    //double test = 1000.0;
     for (int i = 0; i < nrow; i ++) {
         ++yy;
         int xx = 0;
@@ -262,7 +264,9 @@ void MainWindow::populateFusionPPIScene(int nrow, int ncol, int width, int heigh
             ++xx;
 
             int pair_cnt = _fp->output[ pair<int,int>(i,j) ];
-            float ratio = min( pair_cnt / 1000.0, 1.0 );
+            float ratio = min( pair_cnt / _run->m_color_ratio, 1.0 );
+            //float ratio = min( pair_cnt / 1000.0, 1.0 );
+            //float ratio = min( pair_cnt / test, 1.0 );
             QColor color = gp.getColor(ratio);
 
             QGraphicsItem *item = new Chip(color, xx, yy);

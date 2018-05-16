@@ -14,6 +14,8 @@ public:
     Configuration _config;
 
     ~RuntimeInfo();
+
+    double m_color_ratio;
 };
 
 #endif // RUNTIMEINFO_H
