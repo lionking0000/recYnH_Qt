@@ -525,6 +525,15 @@ int MergeTab::merge()
     filtered_window->show();
 
 
+    aSelectionReadPair.InteractionScore2( aNonSelectionReadPair.nullMatrixValue, aSelectionReadPair.filterdMatrixValue );
+    createFusionPair( aSelectionReadPair.vecColName, aSelectionReadPair.vecRowName, aSelectionReadPair.IS2MatrixValue );
+
+    this->m_robot->_run.m_color_ratio = 10.0;
+    MainWindow* IS2_window = new MainWindow(&this->m_robot->_run, 0);
+    IS2_window->setWindowTitle(tr("Interaction Score Matrix"));
+    IS2_window->show();
+
+
     return 0;
 
     /*
